@@ -383,6 +383,53 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 95836299}
   m_CullTransparentMesh: 1
+--- !u!1 &99150092
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 99150094}
+  - component: {fileID: 99150093}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &99150093
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 99150092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e25fc0fb10ace2f498468f3773e0d3b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  uiManager: {fileID: 758481749}
+  glassController: {fileID: 7991996075802987415}
+  maxAttempts: 30
+--- !u!4 &99150094
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 99150092}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &323735683
 GameObject:
   m_ObjectHideFlags: 0
@@ -466,9 +513,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 758481749}
-        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
-        m_MethodName: RestartGame
+      - m_Target: {fileID: 99150093}
+        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
+        m_MethodName: StartGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1222,8 +1269,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 758481749}
-        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
+      - m_Target: {fileID: 99150093}
+        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
         m_MethodName: StartGame
         m_Mode: 1
         m_Arguments:
@@ -2747,7 +2794,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 758481749}
         m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
-        m_MethodName: ShowMainMenu
+        m_MethodName: RestartGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2803,6 +2850,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 98882471439369521, guid: 885a52b5b252bee4f9b679d6cd84b9b6, type: 3}
+      propertyPath: gameManager
+      value: 
+      objectReference: {fileID: 99150093}
+    - target: {fileID: 98882471439369521, guid: 885a52b5b252bee4f9b679d6cd84b9b6, type: 3}
+      propertyPath: glassCollider
+      value: 
+      objectReference: {fileID: 1009453798}
     - target: {fileID: 3353778318915599584, guid: 885a52b5b252bee4f9b679d6cd84b9b6, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -2858,13 +2913,25 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1009453798}
   m_SourcePrefab: {fileID: 100100000, guid: 885a52b5b252bee4f9b679d6cd84b9b6, type: 3}
+--- !u!114 &7991996075802987415 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 98882471439369521, guid: 885a52b5b252bee4f9b679d6cd84b9b6, type: 3}
+  m_PrefabInstance: {fileID: 7991996075802987414}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1009453792}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c45fabbe0d4446f45b2a28bbab183f63, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GlassController
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 99150094}
+  - {fileID: 758481750}
   - {fileID: 479873606}
   - {fileID: 70525021}
   - {fileID: 7991996075802987414}
   - {fileID: 1500377179}
   - {fileID: 508173432}
-  - {fileID: 758481750}

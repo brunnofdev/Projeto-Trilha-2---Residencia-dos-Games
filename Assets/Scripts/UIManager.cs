@@ -29,7 +29,7 @@ public class UIManager : MonoBehaviour
         resultPanel.SetActive(false);
     }
 
-    public void StartGame()
+    public void ShowGameHUD()
     {
         mainMenuPanel.SetActive(false);
         hudPanel.SetActive(true);

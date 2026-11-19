@@ -1,25 +1,32 @@
-
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class GlassController : MonoBehaviour
 {
-    private Camera camera;
+    [Header("Referências")]
+    [SerializeField] private GameManager gameManager;
+    [SerializeField] private Collider glassCollider;
+
+    private Camera mainCamera;
     private SegmentScript[] segments;
 
     private int completedSegments;
-    private bool completed;
 
-    void Start()
+    public int CompletedSegments => completedSegments;
+    public int TotalSegments => segments != null ? segments.Length : 0;
+
+    private void Awake()
     {
-        camera = Camera.main;
-        segments = GetComponentsInChildren<SegmentScript>();
-        Debug.Log("Segmentos: " + segments.Length);
+        mainCamera = Camera.main;
+        segments = GetComponentsInChildren<SegmentScript>(true);
     }
 
-    void Update()
+    private void Update()
     {
-        if (completed || Mouse.current == null)
+        if (gameManager == null || !gameManager.IsPlaying)
+            return;
+
+        if (Mouse.current == null)
             return;
 
         if (Mouse.current.leftButton.wasPressedThisFrame)
@@ -28,32 +35,52 @@ public class GlassController : MonoBehaviour
         }
     }
 
-    void DetectClick()
+    public void ResetRound()
+    {
+        completedSegments = 0;
+
+        if (segments == null)
+            return;
+
+        foreach (SegmentScript segment in segments)
+        {
+            segment.ResetSegment();
+        }
+    }
+
+    private void DetectClick()
     {
         Vector2 mousePos = Mouse.current.position.ReadValue();
-        Ray ray = camera.ScreenPointToRay(mousePos);
+        Ray ray = mainCamera.ScreenPointToRay(mousePos);
 
-        if (Physics.Raycast(ray, out RaycastHit hit))
+        RaycastHit[] hits = Physics.RaycastAll(ray);
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        bool clickedGlass = false;
+
+        foreach (RaycastHit hit in hits)
         {
-            SegmentScript segment =
-                hit.collider.GetComponentInParent<SegmentScript>();
+            SegmentScript segment = hit.collider.GetComponentInParent<SegmentScript>();
 
             if (segment != null)
             {
                 if (segment.Complete())
                 {
                     completedSegments++;
-
-                    Debug.Log("Progresso: " +
-                        completedSegments + "/" + segments.Length);
-
-                    if (completedSegments == segments.Length)
-                    {
-                        completed = true;
-                        Debug.Log("Forma completa!");
-                    }
+                    gameManager.RegisterHit(completedSegments, segments.Length);
                 }
+                return;
             }
+
+            if (hit.collider == glassCollider)
+            {
+                clickedGlass = true;
+            }
+        }
+
+        if (clickedGlass)
+        {
+            gameManager.RegisterMiss();
         }
     }
 }
