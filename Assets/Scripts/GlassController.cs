@@ -6,6 +6,7 @@ public class GlassController : MonoBehaviour
     [Header("Referências")]
     [SerializeField] private GameManager gameManager;
     [SerializeField] private Collider glassCollider;
+    [SerializeField] private Transform shapeContainer;
 
     private Camera mainCamera;
     private SegmentScript[] segments;
@@ -18,7 +19,6 @@ public class GlassController : MonoBehaviour
     private void Awake()
     {
         mainCamera = Camera.main;
-        segments = GetComponentsInChildren<SegmentScript>(true);
     }
 
     private void Update()
@@ -35,17 +35,25 @@ public class GlassController : MonoBehaviour
         }
     }
 
-    public void ResetRound()
+    public void LoadShape(GameObject shapePrefab)
     {
         completedSegments = 0;
 
-        if (segments == null)
-            return;
 
-        foreach (SegmentScript segment in segments)
+        for (int i = shapeContainer.childCount - 1; i >= 0; i--)
         {
-            segment.ResetSegment();
+            GameObject oldShape = shapeContainer.GetChild(i).gameObject;
+            oldShape.SetActive(false);
+            Destroy(oldShape);
         }
+
+        GameObject newShape = Instantiate(shapePrefab, shapeContainer);
+        newShape.transform.localPosition = Vector3.zero;
+        newShape.transform.localRotation = Quaternion.identity;
+        newShape.transform.localScale = shapePrefab.transform.localScale;
+
+        segments = newShape.GetComponentsInChildren<SegmentScript>(true);
+        Debug.Log($"Forma '{shapePrefab.name}' carregada com {segments.Length} segmentos.");
     }
 
     private void DetectClick()
@@ -67,7 +75,7 @@ public class GlassController : MonoBehaviour
                 if (segment.Complete())
                 {
                     completedSegments++;
-                    gameManager.RegisterHit(completedSegments, segments.Length);
+                    gameManager.RegisterHit();
                 }
                 return;
             }
