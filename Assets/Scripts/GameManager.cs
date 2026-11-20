@@ -16,6 +16,8 @@ public class GameManager : MonoBehaviour
     [Header("Formas Disponíveis (Prefabs)")]
     [SerializeField] private GameObject[] shapePrefabs;
 
+    [SerializeField] private AudioManager audioManager;
+
     [Header("Regras da Partida")]
     [SerializeField] private int maxAttempts = 3;
 
@@ -29,6 +31,8 @@ public class GameManager : MonoBehaviour
     {
         CurrentState = GameState.Menu;
         remainingAttempts = maxAttempts;
+        if (audioManager != null)
+            audioManager.PlayLofiMusic();
     }
 
     public void StartGame()
@@ -44,6 +48,9 @@ public class GameManager : MonoBehaviour
 
         CurrentState = GameState.Playing;
         remainingAttempts = maxAttempts;
+
+        if (audioManager != null)
+            audioManager.PlayLofiMusic();
 
         glassController.LoadShape(GetRandomShape());
 
@@ -72,6 +79,9 @@ public class GameManager : MonoBehaviour
         if (!IsPlaying)
             return;
 
+        if (audioManager != null)
+            audioManager.PlayHitSound();
+
         int current = glassController.CompletedSegments;
         int total = glassController.TotalSegments;
 
@@ -88,6 +98,9 @@ public class GameManager : MonoBehaviour
     {
         if (!IsPlaying)
             return;
+
+        if (audioManager != null)
+            audioManager.PlayMissSound();
 
         remainingAttempts--;
 
@@ -112,6 +125,19 @@ public class GameManager : MonoBehaviour
 
     private void EndGame(bool victory)
     {
+
+        if (audioManager != null)
+        {
+            if (victory)
+            {
+                audioManager.PlayVictoryMusic();
+            }
+            else
+            {
+                audioManager.StopMusic();
+                audioManager.PlayShatterSound();
+            }
+        }
         CurrentState = GameState.Ended;
         uiManager.ShowResult(victory);
     }
