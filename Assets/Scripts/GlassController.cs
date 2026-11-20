@@ -1,10 +1,13 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 
 public class GlassController : MonoBehaviour
 {
     [Header("Referências")]
     [SerializeField] private GameManager gameManager;
+    [SerializeField] private ToolController toolController;
     [SerializeField] private Collider glassCollider;
     [SerializeField] private Transform shapeContainer;
 
@@ -14,125 +17,118 @@ public class GlassController : MonoBehaviour
 
     private Camera mainCamera;
     private SegmentScript[] segments;
-
     private int completedSegments;
 
     public int CompletedSegments => completedSegments;
     public int TotalSegments => segments != null ? segments.Length : 0;
 
-    private void Awake()
-    {
-        mainCamera = Camera.main;
-    }
+    private void Awake() => mainCamera = Camera.main;
 
     private void Update()
     {
-        if (gameManager == null || !gameManager.IsPlaying)
+        if (gameManager == null || !gameManager.IsPlaying || Mouse.current == null || toolController == null || glassCollider == null)
+        {
+            if (toolController != null) toolController.HidePreview();
             return;
+        }
 
-        if (Mouse.current == null)
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+        {
+            toolController.HidePreview();
             return;
+        }
+
+        Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
+        if (!glassCollider.Raycast(ray, out RaycastHit hit, 100f))
+        {
+            toolController.HidePreview();
+            return;
+        }
+
+        Vector3 forward = shapeContainer != null ? shapeContainer.forward : glassCollider.transform.forward;
+        toolController.UpdatePreview(hit.point, hit.normal, forward);
 
         if (Mouse.current.leftButton.wasPressedThisFrame)
-        {
-            DetectClick();
-        }
+            ApplyToolImpact(hit.point, hit.normal, forward);
     }
 
     public void LoadShape(GameObject shapePrefab)
     {
         completedSegments = 0;
-
-        ClearCracks();
-
-
-        for (int i = shapeContainer.childCount - 1; i >= 0; i--)
-        {
-            GameObject oldShape = shapeContainer.GetChild(i).gameObject;
-            oldShape.SetActive(false);
-            Destroy(oldShape);
-        }
+        ClearChildren(crackContainer);
+        ClearChildren(shapeContainer);
 
         GameObject newShape = Instantiate(shapePrefab, shapeContainer);
-        newShape.transform.localPosition = Vector3.zero;
-        newShape.transform.localRotation = Quaternion.identity;
+        newShape.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
         newShape.transform.localScale = shapePrefab.transform.localScale;
 
         segments = newShape.GetComponentsInChildren<SegmentScript>(true);
-        Debug.Log($"Forma '{shapePrefab.name}' carregada com {segments.Length} segmentos.");
     }
 
-    private void DetectClick()
-{
-    Vector2 mousePos = Mouse.current.position.ReadValue();
-    Ray ray = mainCamera.ScreenPointToRay(mousePos);
-
-    RaycastHit[] hits = Physics.RaycastAll(ray);
-    System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
-
-    bool clickedGlass = false;
-    Vector3 glassHitPoint = Vector3.zero;
-
-    foreach (RaycastHit hit in hits)
+    private void ApplyToolImpact(Vector3 centerPoint, Vector3 normal, Vector3 forward)
     {
-        SegmentScript segment = hit.collider.GetComponentInParent<SegmentScript>();
+        var tool = toolController.CurrentTool;
+        if (tool == null || tool.segments == null) return;
 
-        if (segment != null)
+        Quaternion rot = toolController.GetWorldRotation(normal, forward);
+        HashSet<SegmentScript> hitSegments = new HashSet<SegmentScript>();
+
+        foreach (var seg in tool.segments)
         {
-            // 1. Gera o efeito de rachadura no acerto
-            SpawnCrackEffect(hit.point);
+            Vector3 worldCenter = centerPoint + (rot * seg.localOffset);
+            Collider[] overlaps = Physics.OverlapBox(worldCenter, seg.size * 0.5f, rot);
 
-            // 2. Atualiza o segmento e o progresso
+            bool hitAny = false;
+            foreach (Collider col in overlaps)
+            {
+                SegmentScript segment = col.GetComponentInParent<SegmentScript>();
+                if (segment != null)
+                {
+                    hitAny = true;
+                    hitSegments.Add(segment);
+                }
+            }
+
+            if (!hitAny)
+            {
+                SpawnCrackEffect(worldCenter, normal);
+                gameManager.RegisterMiss();
+                return;
+            }
+        }
+
+        int newlyCompleted = 0;
+        foreach (SegmentScript segment in hitSegments)
+        {
             if (segment.Complete())
             {
                 completedSegments++;
-                gameManager.RegisterHit();
+                newlyCompleted++;
             }
-            return;
         }
 
-        if (hit.collider == glassCollider)
+        if (newlyCompleted > 0)
+            gameManager.RegisterHit();
+    }
+
+    private void SpawnCrackEffect(Vector3 position, Vector3 normal)
+    {
+        if (crackPrefab == null) return;
+
+        Quaternion rot = Quaternion.FromToRotation(Vector3.up, normal) * Quaternion.Euler(90f, Random.Range(0f, 360f), 0f);
+        GameObject crack = Instantiate(crackPrefab, position + normal * 0.01f, rot, crackContainer);
+        crack.transform.localScale = Vector3.one * 0.7f;
+    }
+
+    private void ClearChildren(Transform container)
+    {
+        if (container == null) return;
+
+        for (int i = container.childCount - 1; i >= 0; i--)
         {
-            clickedGlass = true;
-            glassHitPoint = hit.point;
+            GameObject child = container.GetChild(i).gameObject;
+            child.SetActive(false);
+            Destroy(child);
         }
     }
-
-    if (clickedGlass)
-    {
-        // 1. Gera o efeito de rachadura no erro
-        SpawnCrackEffect(glassHitPoint);
-
-        // 2. Desconta a tentativa no GameManager
-        gameManager.RegisterMiss();
-    }
-}
-
-    public void SpawnCrackEffect(Vector3 spawnPosition)
-{
-    if (crackPrefab == null)
-    {
-        Debug.LogWarning("[GlassController] 'crackPrefab' não foi atribuído no Inspector!");
-        return;
-    }
-
-    // Leve elevação no eixo Y (0.005f) para não piscar sobre o vidro/mesa
-    Vector3 position = new Vector3(spawnPosition.x, spawnPosition.y + 0.05f, spawnPosition.z);
-    Quaternion rotation = Quaternion.Euler(90f, Random.Range(0f, 360f), 0f);
-
-    GameObject newCrack = Instantiate(crackPrefab, position, rotation, crackContainer);
-    newCrack.transform.localScale = new Vector3(0.7f, 0.7f, 0.7f);
-}
-
-public void ClearCracks()
-{
-    if (crackContainer == null) return;
-
-    // Destrói todas as rachaduras acumuladas no container
-    for (int i = crackContainer.childCount - 1; i >= 0; i--)
-    {
-        Destroy(crackContainer.GetChild(i).gameObject);
-    }
-    Debug.Log("[GlassController] Rachaduras limpas da cena.");
-}
 }
