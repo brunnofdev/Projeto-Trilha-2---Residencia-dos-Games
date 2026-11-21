@@ -59,7 +59,7 @@ public class GlassController : MonoBehaviour
         ClearChildren(shapeContainer);
 
         GameObject newShape = Instantiate(shapePrefab, shapeContainer);
-        newShape.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+        newShape.transform.SetLocalPositionAndRotation(Vector3.zero, shapePrefab.transform.localRotation);
         newShape.transform.localScale = shapePrefab.transform.localScale;
 
         segments = newShape.GetComponentsInChildren<SegmentScript>(true);
