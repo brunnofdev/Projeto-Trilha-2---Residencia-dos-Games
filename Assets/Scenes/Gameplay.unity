@@ -4740,7 +4740,7 @@ MonoBehaviour:
   lofiMusic: {fileID: 8300000, guid: cdc7c8c236b51fe40bc6cd7aae61624a, type: 3}
   victoryMusic: {fileID: 8300000, guid: 4b539167a32a51241829223bda8e1010, type: 3}
   hitClip: {fileID: 8300000, guid: 8e743c22f2ec9aa498cea1842d03f922, type: 3}
-  missClip: {fileID: 8300000, guid: a7374d39fd1c6df4985b1a76254a7fee, type: 3}
+  missClip: {fileID: 8300000, guid: 85f5bf6074c1af240b49e9fe11bb848c, type: 3}
   shatterClip: {fileID: 8300000, guid: 728efc6aab803b743bf6b3878f0b8e35, type: 3}
   uiClickClip: {fileID: 8300000, guid: 54f3f8d990641844c9d7a3196c811f88, type: 3}
 --- !u!82 &1608978557
