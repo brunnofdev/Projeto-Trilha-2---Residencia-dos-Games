@@ -5,13 +5,13 @@ using UnityEngine.EventSystems;
 
 public class GlassController : MonoBehaviour
 {
-    [Header("Referências")]
+    [Header("Ref")]
     [SerializeField] private GameManager gameManager;
     [SerializeField] private ToolController toolController;
     [SerializeField] private Collider glassCollider;
     [SerializeField] private Transform shapeContainer;
 
-    [Header("Efeitos Visuais")]
+    [Header("Efeitos")]
     [SerializeField] private GameObject crackPrefab;
     [SerializeField] private Transform crackContainer;
 

@@ -33,6 +33,6 @@ public class ShapePivot : MonoBehaviour
             child.position -= offset;
         }
 
-        Debug.Log("Pivot centralizado!");
+        Debug.Log("Centralizado!");
     }
 }

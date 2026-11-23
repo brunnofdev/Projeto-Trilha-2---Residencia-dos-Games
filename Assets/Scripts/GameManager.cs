@@ -9,11 +9,11 @@ public class GameManager : MonoBehaviour
         Ended
     }
 
-    [Header("Referências")]
+    [Header("Ref")]
     [SerializeField] private UIManager uiManager;
     [SerializeField] private GlassController glassController;
 
-    [Header("Formas Disponíveis (Prefabs)")]
+    [Header("Prefabs")]
     [SerializeField] private GameObject[] shapePrefabs;
 
     [SerializeField] private AudioManager audioManager;
